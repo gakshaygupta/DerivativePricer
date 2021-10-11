@@ -1,0 +1,3 @@
+Convert Maturity into number between 0 and 1 for 1 year 
+lets have some date scehema 
+convert the linear interest rate to exponential to make the martingle more precise although 1/(1+R) ~= 1-R ~= 1-R ~= e^( R ) ( by taylor series expansion and taking the linear term)
