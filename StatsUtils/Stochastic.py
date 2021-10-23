@@ -13,6 +13,7 @@ class BrownionPathGen:
         
         Normals = np.random.standard_normal( size=[self.NumPaths,1] )
         
+        #have to adjust for leap year 
         Var = DiffTime/365  # between two crosssection the time spend it difftime so var is also proportional to diff time
         
         Std = Var**0.5
@@ -29,7 +30,7 @@ class BrownionPathGen:
         
         Paths = [Path]
         #lets find out a matrix operation to do this . will be much faster
-        for i in range( 0, self.Maturity ): # Maturity is a number for now but should be a date which should be compared to the global date 
+        for i in range( 0, self.Maturity -1 ): # Maturity is a number for now but should be a date which should be compared to the global date 
             Paths.append( self.GenerateCrossSection( Last_Mean = Paths[i], DiffTime = 1 ) ) #this difftime is for now 1 but we may change it in future to make it more advance 
         
         return Paths

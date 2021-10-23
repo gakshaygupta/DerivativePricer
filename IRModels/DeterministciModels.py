@@ -5,7 +5,7 @@ class ConstIR:
         self.R = R
     
     def GetDiscountCurve( self, NumPaths, Maturity ):
-        DF = np.ones([NumPaths,Maturity+1])/365
+        DF = np.ones([NumPaths,Maturity])/365
         DF = np.e**(-self.R*DF)
         return DF
     

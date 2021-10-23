@@ -10,8 +10,8 @@ class AmericanMC:
         self.PayOffIndex = Derivative.PayoffIndex #this index tells us which indexes to be used for calculating the value 
         self.IRModel = IRModel # this is interest rate model . this can be stochastic or deterministic 
         self.RF_Paths = Derivative.RiskFactorPaths() # this variabl carries the riskfactor paths
-        self.NumPaths,self.Maturity = self.RF_Paths.shape
-        self.DiscountCurve = IRModel.GetDiscountCurve(self.NumPaths,self.Maturity+1) #this discount curve will be between two corssecgtion 
+        self.NumPaths,self.Maturity = self.Derivative.NumPaths, self.Derivative.Maturity
+        self.DiscountCurve = IRModel.GetDiscountCurve(self.NumPaths,self.Maturity) #this discount curve will be between two corssecgtion 
         self.StoppingRule = [self.Maturity-2]*self.NumPaths # this matrix defines the stoping rule for pricing
         self.PayOffMatrix = np.zeros_like(self.StoppingRule) # this matrix gives the payoff for each crossection
         self.RegCoeffs = [] #ths array stores the reg coefficients 
@@ -26,18 +26,21 @@ class AmericanMC:
         Implied_Value = np.array(Implied_Value).T
 
         #do AMC Here
-        Discounted_IV = Implied_Value
-        for index in self.PayOffIndex[::-1]:
+        Discounted_IV = Implied_Value 
+        for index in range( len( self.PayOffIndex )-1,-1,-1 ):
             DF = self.DiscountFactor(index)[:,np.newaxis]
     
-            Discounted_IV[:,index-1:] = DF*Discounted_IV[:,index-1:]
+            Discounted_IV[:,index:] = DF*Discounted_IV[:,index:] #this will be only for payoff index 
+            
+            if( index== len( self.PayOffIndex)-1):
+                continue
             
             CF = self.GetCashFlow(Discounted_IV)
-            X  = self.RF_Paths[:,index]
+            X  = self.RF_Paths[:,self.PayOffIndex[index]]
             self.PerformRegression(CF,X)
             E_DCF = self.GetCondCF(X)
             
-            Stopping = Implied_Value[:,index-1]>=E_DCF
+            Stopping = Implied_Value[:,index]>=E_DCF
             
             self.UpdateStopingRule(Stopping, index)
             
@@ -48,7 +51,8 @@ class AmericanMC:
         Value = 0
         for index in range( 0, self.NumPaths ):
             Value += self.Discounted_IV[index,self.StoppingRule[index]]
-        return Value
+        print( self.StoppingRule)
+        return Value/self.NumPaths
     
     def PerformRegression( self, Y,X ):
         self.RegCoeff = np.polyfit(X,Y,self.Num_Basis)

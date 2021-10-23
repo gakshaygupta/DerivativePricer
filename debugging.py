@@ -25,7 +25,7 @@ Pricer = AmericanMC(3,"linear",Option,IRModel)
 
 
 # %%
-#value = Pricer.GetValue()
+value = Pricer.GetValue()
 
 
 # %%
@@ -44,5 +44,6 @@ plt.plot( np.average(paths.T, axis =  1 ))
 
 # %%
 
+print( Pricer.StoppingRule)
 
 

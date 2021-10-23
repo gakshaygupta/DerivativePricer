@@ -15,13 +15,13 @@ class AmericanOption:
         self.NumPaths = BrownionMotionGen.NumPaths
 
         if( len(PayOffIndex)==0):
-            self.PayoffIndex = [i for i in range( 1, self.Maturity+1)]
+            self.PayoffIndex = [i for i in range( 1, self.Maturity)]
         self.GenerateRF()
         
     
     def GenerateRF(self):
         RFs = []
-        for index in range(0,self.Maturity+1):
+        for index in range(0,self.Maturity):
             RFs.append(self.GeometricBM(self.BMPath[index],index/365)) 
         self.RF_Path = RFs
     
@@ -45,9 +45,9 @@ class AmericanOption:
         RFPaths = self.RiskFactorPaths( )
         self.DiscountCurve = IRModel.GetDiscountCurve(self.NumPaths,self.Maturity)
 
-        for index in range( self.Maturity,0,-1):
+        for index in range( self.Maturity-1,0,-1):
             DF = self.DiscountFactor(index)[:,np.newaxis]
-            RFPaths[:,index-1:] = DF*RFPaths[:,index-1:]
+            RFPaths[:,index:] = DF*RFPaths[:,index:]
             
         return RFPaths
          
