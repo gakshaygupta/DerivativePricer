@@ -12,7 +12,9 @@ class AmericanOption:
         self.Type = Type
         self.BMPath = BrownionMotionGen.GeneratePaths()
         self.Maturity = BrownionMotionGen.Maturity
-        if( len(PayOffIndex)!=0):
+        self.NumPaths = BrownionMotionGen.NumPaths
+
+        if( len(PayOffIndex)==0):
             self.PayoffIndex = [i for i in range( 1, self.Maturity+1)]
         self.GenerateRF()
         
@@ -20,7 +22,7 @@ class AmericanOption:
     def GenerateRF(self):
         RFs = []
         for index in range(0,self.Maturity+1):
-            RFs.append(self.GeometricBM(self.BMPath[index],index/self.Maturity)) 
+            RFs.append(self.GeometricBM(self.BMPath[index],index/365)) 
         self.RF_Path = RFs
     
     def GeometricBM( self, Section, Time ):
@@ -31,7 +33,21 @@ class AmericanOption:
     
     def GetImpliedPayOff( self, CrossSection ):
         if( self.Type=="Put" ):
-            return np.max( self.Strike-CrossSection,0 )
+            return np.maximum( self.Strike-CrossSection,0 )
         else:
-            return np.max( CrossSection-self.Strike,0 )
+            return np.maximum( CrossSection-self.Strike,0 )
+        
+    def DiscountFactor( self, CrossSectionIndex ):
+        DF = self.DiscountCurve[:,CrossSectionIndex]
+        return DF    
+    
+    def DiscountedRFPaths(self, IRModel ):
+        RFPaths = self.RiskFactorPaths( )
+        self.DiscountCurve = IRModel.GetDiscountCurve(self.NumPaths,self.Maturity)
+
+        for index in range( self.Maturity,0,-1):
+            DF = self.DiscountFactor(index)[:,np.newaxis]
+            RFPaths[:,index-1:] = DF*RFPaths[:,index-1:]
+            
+        return RFPaths
          
